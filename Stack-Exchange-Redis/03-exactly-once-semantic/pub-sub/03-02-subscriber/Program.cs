@@ -51,7 +51,7 @@ internal class Program
 
             sub.Subscribe(channel, (channel, message) =>
             {
-                Console.WriteLine($"[{DateTime.Now:HHmmss.fff}] Processing {settings.AppName}: {message}".K(ConsoleColor.Yellow));
+                //Console.WriteLine($"[{DateTime.Now:HHmmss.fff}] Processing {settings.AppName}: {message}".K(ConsoleColor.Yellow));
                 ProcessQueue(db, hashKey, queueKey);
             });
 
@@ -81,7 +81,7 @@ internal class Program
         var id = db.ListRightPop(queueKey);
         if (!id.HasValue)
         {
-            Console.WriteLine($"[{DateTime.Now:HHmmss.fff}] No messages to process".K(ConsoleColor.DarkGray));
+           // Console.WriteLine($"[{DateTime.Now:HHmmss.fff}] No messages to process".K(ConsoleColor.DarkGray));
             return;
         }
 

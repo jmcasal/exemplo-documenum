@@ -35,11 +35,8 @@ $subscriber = "$xpath-02-subscriber\bin\Debug\net8.0\01-02-subscriber.exe"
 
 dotnet build -c Debug $subscriberProject 
 
-$COLS = 4;
-$ROWS = 4;
-$PUBS = 2; 
-$SUBS = 4; $XUBS = 2;
-
+$COLS = 4;$ROWS = 4;$PUBS = 2; $SUBS = 2; $XUBS = 2;
+#$COLS = 4;$ROWS = 4;$PUBS = 4; $SUBS = 12; $XUBS = 3;
 ## use array imn $q to store the process objects
 
 
