@@ -9,12 +9,12 @@ Este es el tipo más simple de lograr, pero ofrece las garantías menos deseable
 
 ```mermaid
 sequenceDiagram
-    participant Cliente
-    participant Servidor
-    Cliente->>Servidor: Enviar mensaje
-    Note right of Servidor: El servidor recibe el mensaje
-    Servidor->>Cliente: Confirmación (opcional)
-    Note over Cliente, Servidor: No hay reintentos
+    participant Publisher
+    participant Subscriber
+    Publisher->>Subscriber: Enviar mensaje
+    Note right of Subscriber: El subscriptor recibe el mensaje <br>( no hay garantía de entrega)
+    Subscriber-->>Publisher: Confirmación (opcional)
+    Note over Subscriber, Publisher: No hay reintentos
 ```
 
 ### Ejemplo de semántica de como mucho una vez en Redis

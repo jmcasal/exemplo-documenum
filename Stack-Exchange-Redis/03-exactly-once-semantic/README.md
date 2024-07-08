@@ -8,13 +8,21 @@ El estándar para la integridad de los datos:
 
 ```mermaid
 sequenceDiagram
-    participant Cliente
-    participant Servidor
-    Cliente->>+Servidor: Enviar mensaje con ID de transacción
-    Servidor->>+Base de Datos: Verificar ID de transacción
-    Base de Datos-->>-Servidor: ID no existe, procesar mensaje
-    Servidor-->>-Cliente: Confirmación de recepción
-    Note over Cliente, Servidor: No hay pérdida ni duplicados
+    participant Publisher
+    participant Suscriber
+    Publisher->>+Suscriber: Enviar mensaje con ID de transacción
+    Suscriber-->>-Publisher: Confirmación de recepción
+    Suscriber->>+Redis: Verificar ID de transacción
+    Redis-->>-Suscriber: ID NO existe, ignorar mensaje
+
+    Publisher->>+Suscriber: Enviar mensaje con ID de transacción
+    Suscriber-->>Publisher: Confirmación de recepción
+    Suscriber->>+Redis: Verificar ID de transacción
+    Redis->>+Pila Redis: ID exitente, Procesamos ID Pila
+    Pila Redis->>-Suscriber: Retornamos ID de mensaje
+    Suscriber->>-Suscriber: Procesado de mensaje
+
+    Note over Publisher, Suscriber: No hay pérdida ni duplicados
 ```
 
 Estas semanticas las observamos en otros contextos, como en la entrega de mensajes en sistemas de mensajería, en la replicación de bases de datos, en la sincronización de datos entre sistemas, etc.
@@ -22,9 +30,9 @@ Estas semanticas las observamos en otros contextos, como en la entrega de mensaj
 https://docs.aws.amazon.com/step-functions/latest/dg/express-at-least-once-execution.html
 
 ### Multiplexación en Redis 
-La canalización está muy bien, pero a menudo cualquier bloque de código solo quiere un solo valor (o tal vez quiera realizar algunas operaciones, pero que dependen unas de otras). Esto significa que todavía tenemos el problema de que pasamos la mayor parte de nuestro tiempo esperando que los datos se transfieran entre el cliente y el servidor. 
+La canalización está muy bien, pero a menudo cualquier bloque de código solo quiere un solo valor (o tal vez quiera realizar algunas operaciones, pero que dependen unas de otras). Esto significa que todavía tenemos el problema de que pasamos la mayor parte de nuestro tiempo esperando que los datos se transfieran entre el Publisher y el Suscriber. 
 
-Ahora considere una aplicación ocupada, tal vez un servidor web. Por lo general, estas aplicaciones son inherentemente simultáneas, por lo que si tiene 20 solicitudes de aplicaciones paralelas que requieren datos, puede pensar en poner en marcha 20 conexiones o puede sincronizar el acceso a una sola conexión (lo que significaría que el último llamador tendría que esperar la latencia de las otras 19 antes de que se inicie). O como compromiso, tal vez un grupo de 5 conexiones que se alquilan, no importa cómo lo haga, habrá mucha espera. StackExchange.Redis no hace esto; En cambio, hace mucho trabajo para que usted haga un uso efectivo de todo este tiempo de inactividad mediante la multiplexación de una sola conexión. Cuando lo usan simultáneamente diferentes llamadores, canaliza automáticamente las solicitudes independientes, por lo que, independientemente de si las solicitudes usan el bloqueo o el acceso asincrónico, todo el trabajo se canaliza. Por lo tanto, podríamos tener 10 o 20 de nuestro escenario "obtener a y b" de antes (de diferentes solicitudes de aplicación), y todos entrarían en la conexión lo antes posible. Esencialmente, llena el tiempo con el trabajo de otras personas que llaman.waiting
+Ahora considere una aplicación ocupada, tal vez un Suscriber web. Por lo general, estas aplicaciones son inherentemente simultáneas, por lo que si tiene 20 solicitudes de aplicaciones paralelas que requieren datos, puede pensar en poner en marcha 20 conexiones o puede sincronizar el acceso a una sola conexión (lo que significaría que el último llamador tendría que esperar la latencia de las otras 19 antes de que se inicie). O como compromiso, tal vez un grupo de 5 conexiones que se alquilan, no importa cómo lo haga, habrá mucha espera. StackExchange.Redis no hace esto; En cambio, hace mucho trabajo para que usted haga un uso efectivo de todo este tiempo de inactividad mediante la multiplexación de una sola conexión. Cuando lo usan simultáneamente diferentes llamadores, canaliza automáticamente las solicitudes independientes, por lo que, independientemente de si las solicitudes usan el bloqueo o el acceso asincrónico, todo el trabajo se canaliza. Por lo tanto, podríamos tener 10 o 20 de nuestro escenario "obtener a y b" de antes (de diferentes solicitudes de aplicación), y todos entrarían en la conexión lo antes posible. Esencialmente, llena el tiempo con el trabajo de otras personas que llaman.waiting
 
 Las únicas características de Redis que StackExchange.Redis no ofrece (y nunca ofrecerá) son los "pops de bloqueo" (BLPOP, BRPOP y BRPOPLPUSH), ya que esto permitiría que un solo llamador detenga todo el multiplexor, bloqueando a todos los demás llamadores. El único otro momento en el que StackExchange.Redis necesita retener el trabajo es cuando se comprueban las condiciones previas de una transacción, por lo que StackExchange.Redis encapsula dichas condiciones en instancias administradas internamente. Lea más sobre las transacciones aquí. Si crees que quieres "bloquear pops", te sugiero encarecidamente que consideres pub/sub en su lugar:Condition
 
