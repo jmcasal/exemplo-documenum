@@ -130,5 +130,3 @@ $events | Format-Table -AutoSize
 ```
 
 Este script filtra los eventos para mostrar solo los ocurridos en los últimos 7 días. Puedes ajustar `$startDate` y `$endDate` según tus necesidades.
-
-Espero que esto te sea de ayuda para identificar la causa del reinicio de tu sistema Windows.
