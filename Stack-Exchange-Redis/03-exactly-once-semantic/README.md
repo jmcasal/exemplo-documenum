@@ -46,6 +46,7 @@ db.ListLeftPush(key, newWork, flags: CommandFlags.FireAndForget); // insertamos 
 sub.Publish(channel, "");
 ```
 
+
 De este modo, se consigue la misma intención sin necesidad de operaciones de bloqueo. Notas:
 
 - Los datos no se envían a través de Pub/Sub; la API de pub/sub solo se usa para notificar a los trabajadores que comprueben si hay más trabajo
