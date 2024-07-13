@@ -1,6 +1,6 @@
 # Identificar razón reinicio Windows
 
-Para identificar la razón por la cual tu sistema Windows se reinició inesperadamente, puedes seguir estos pasos:
+Para identificar las razones por la cual tu sistema Windows se reinició inesperadamente, puedes seguir estos pasos:
 
 ### 1. Revisar el Visor de Eventos
 El Visor de Eventos de Windows almacena información detallada sobre eventos del sistema, incluidas las razones de los reinicios.
