@@ -20,7 +20,6 @@ Los Worker Services en ASP .NET son una forma de crear aplicaciones de fondo en 
 
 [**Worker Services en ASP .NET**](./05-worker-service-asp-net/README.md)
 
-
 # Referencias
 
 
